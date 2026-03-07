@@ -25,7 +25,7 @@ const Home = () => {
         };
 
         loadPopularMovies();
-    }, [searchQuerry]
+    }, []
     );
 
     // const movies = [
@@ -37,7 +37,22 @@ const Home = () => {
 
     const handleSearch = async(e)=>{
         e.preventDefault();
-        if(!searchQuerry.trim()) return
+
+        if(!searchQuerry.trim()){
+            setLoading(true);
+            try{
+                const popularMovies = await getPopularMovies();
+                setMovies(popularMovies);
+                setError(null)
+            }  catch(error){
+                setError("Failed to load Movies....", error)
+            }
+            finally{
+                setLoading(false);
+            }
+            return;
+        }
+
             if(loading) return
             setLoading(true)
                 try{
@@ -54,13 +69,27 @@ const Home = () => {
                 };  
     };
 
+
+    const handleInputChange = (e)=>{
+        const value = e.target.value;
+        setSearchQuerry(value);
+
+        if(value.trim() === ""){
+            setLoading(true);
+            getPopularMovies()
+            .then(popularMovies => setMovies(popularMovies))
+            .catch(()=> setError("Failed to load movies.."))
+            .finally(()=> setLoading(false));
+        }
+    }
+
   return (
     <>
         <div className='home'>
 
             <form onSubmit={handleSearch} className='search-form'>
                 <input type="text" placeholder='Search for movies....' className='search-input' 
-                    value={searchQuerry} onChange={(e) => setSearchQuerry(e.target.value)}/>
+                    value={searchQuerry} onChange={handleInputChange}/>
                 <button type='submit' className='search-button'>Search</button>
             </form>
 
