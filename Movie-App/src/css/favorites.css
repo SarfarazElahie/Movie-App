@@ -49,3 +49,9 @@
 .movies-grid > * {
   animation: fadeIn 0.3s ease-out forwards;
 }
+
+@media (max-width: 480px){
+  .favorites{
+    padding: 1rem;
+  }
+}
