@@ -68,7 +68,6 @@
   }
     .search-form {
     flex-direction: column;  
-     margin: 0 auto 1rem;
   }
 
   .search-button {
