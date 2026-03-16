@@ -25,6 +25,15 @@ const MovieCard = ({movie}) => {
                     <button className={`favorite-btn ${favorite ? "active" : ""}`} onClick={onFavoriteClick}>
                         &#10084;
                     </button>
+                     <div className="movie-hover-info">
+                        <p className="movie-overview">
+                            {movie.overview ? movie.overview.slice(0, 120) + "..." : "No description available."}
+                        </p>
+                        <div className="movie-hover-stats">
+                            <span>⭐ {movie.vote_average?.toFixed(1)} / 10</span>
+                            <span>🗳️ {movie.vote_count?.toLocaleString()} votes</span>
+                        </div>
+                     </div>
                 </div>
             </div>
             <div className="movie-info">
