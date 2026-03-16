@@ -2,19 +2,25 @@ import React, { useEffect, useState } from 'react'
 import MovieCard from '../MovieCard'
 import "../../css/Home.css";
 import { getPopularMovies, searchMovies } from '../../services/api';
+import { useLocation } from 'react-router-dom';
 const Home = () => {
 
     const [movies, setMovies] = useState([]);
     const [searchQuerry, setSearchQuerry] = useState("");
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const location = useLocation();
     
 
     useEffect(() => {
         const loadPopularMovies = async () => {
+             setSearchQuerry("");
+             setLoading(true);
             try {
                 const popularMovies = await getPopularMovies();
                 setMovies(popularMovies);
+                setError(null)
             } catch (err) {
                 console.error(err);
                 setError("Failed to load movies...");
@@ -25,7 +31,7 @@ const Home = () => {
         };
 
         loadPopularMovies();
-    }, []
+    }, [location.key]
     );
 
     // const movies = [
