@@ -9,6 +9,11 @@
   flex-direction: column;
 }
 
+.movie-card-link {
+    text-decoration: none;
+    color: inherit;
+}
+
 .movie-card:hover {
   transform: translateY(-5px);
 }

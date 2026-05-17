@@ -13,3 +13,21 @@ export const searchMovies = async(query) => {
     const data = await response.json();
     return data.results;
 };
+
+export const getMovieDetails = async (movieId)=> {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}`)
+    const data = await response.json();
+    return data;
+}
+
+export const getMovieCredits = async (movieId) => {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}/credits?api_key=${API_KEY}`);
+    const data = await response.json();
+    return data.cast; 
+};
+
+export const getMovieVideos = async (movieId) => {
+    const response = await fetch(`${BASE_URL}/movie/${movieId}/videos?api_key=${API_KEY}`);
+    const data = await response.json();
+    return data.results.find(video => video.type === "Trailer" && video.site === "YouTube") || null;
+};

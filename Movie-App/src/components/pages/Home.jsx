@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import MovieCard from '../MovieCard'
 import "../../css/Home.css";
 import { getPopularMovies, searchMovies } from '../../services/api';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 const Home = () => {
 
     const [movies, setMovies] = useState([]);
@@ -11,28 +11,42 @@ const Home = () => {
     const [loading, setLoading] = useState(true);
 
     const location = useLocation();
+    const navigationType = useNavigationType()
     
 
-    useEffect(() => {
-        const loadPopularMovies = async () => {
-             setSearchQuerry("");
-             setLoading(true);
-            try {
-                const popularMovies = await getPopularMovies();
-                setMovies(popularMovies);
-                setError(null)
-            } catch (err) {
-                console.error(err);
-                setError("Failed to load movies...");
-            }
-            finally{
+     useEffect(() => {
+        if (navigationType === 'POP') {
+            const savedQuery   = sessionStorage.getItem('homeSearchQuery') || '';
+            const savedMovies  = sessionStorage.getItem('homeSearchMovies');
+
+            if (savedMovies) {
+                setSearchQuerry(savedQuery);
+                setMovies(JSON.parse(savedMovies));
                 setLoading(false);
+                return; 
             }
-        };
+        }
 
         loadPopularMovies();
-    }, [location.key]
-    );
+
+    }, [location.key]);
+
+     const loadPopularMovies = async () => {
+        setSearchQuerry("");
+        setLoading(true);
+        try {
+            const popularMovies = await getPopularMovies();
+            setMovies(popularMovies);
+            setError(null);
+            sessionStorage.setItem('homeSearchQuery',  '');
+            sessionStorage.setItem('homeSearchMovies', JSON.stringify(popularMovies));
+        } catch (err) {
+            setError("Failed to load movies...");
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     // const movies = [
     //     {id : 1, title : "Dune: Part Two", release_date : "2024-03-01", rating : "⭐⭐⭐⭐⭐"},
@@ -45,17 +59,7 @@ const Home = () => {
         e.preventDefault();
 
         if(!searchQuerry.trim()){
-            setLoading(true);
-            try{
-                const popularMovies = await getPopularMovies();
-                setMovies(popularMovies);
-                setError(null)
-            }  catch(error){
-                setError("Failed to load Movies....", error)
-            }
-            finally{
-                setLoading(false);
-            }
+            await loadPopularMovies();
             return;
         }
 
@@ -65,6 +69,8 @@ const Home = () => {
                     const searchResults = await searchMovies(searchQuerry);
                     setMovies(searchResults);
                     setError(null);
+                    sessionStorage.setItem('homeSearchQuery',  searchQuerry); 
+                    sessionStorage.setItem('homeSearchMovies', JSON.stringify(searchResults));
                 }
                 catch(err){
                     console.error(err);

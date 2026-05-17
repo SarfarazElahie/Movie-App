@@ -1,6 +1,7 @@
 import React from 'react'
 import "../css/MovieCard.css";
 import { useMovieContext } from '../contexts/MovieContext';
+import { Link } from 'react-router-dom';
 
 const MovieCard = ({movie}) => {
 
@@ -11,6 +12,7 @@ const MovieCard = ({movie}) => {
 
     function onFavoriteClick(e) {
         e.preventDefault();
+        e.stopPropagation();
         if(favorite) removeTofavorites(movie.id);
         else addTofavorites(movie);
     }
@@ -18,6 +20,7 @@ const MovieCard = ({movie}) => {
 
   return (
     <>
+    <Link to={`/movie/${movie.id}`} className="movie-card-link">
         <div className="movie-card">
             <div className="movie-poster">
                 <img src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`} alt={movie.title} />
@@ -42,6 +45,7 @@ const MovieCard = ({movie}) => {
                 <h3>{movie.rating}</h3>
             </div>
         </div>
+    </Link>
     </>
   )
 }
