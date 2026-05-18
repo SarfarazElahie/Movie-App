@@ -61,6 +61,92 @@
   box-sizing: border-box;
 }
 
+/* ─── Search Suggestions ─── */
+
+.search-wrapper {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  padding: 0 1rem;
+  box-sizing: border-box;
+  position: relative;   /* dropdown positions relative to this */
+}
+
+/* Remove margin from search-form since wrapper handles it now */
+.search-wrapper .search-form {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.suggestions-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);  /* 4px gap below the input row */
+  left: 1rem;
+  right: 1rem;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background-color: #2a2a2a;
+}
+
+.suggestion-poster {
+  width: 36px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 3px;
+  flex-shrink: 0;
+  background-color: #333;
+}
+
+.suggestion-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;          /* prevents text overflow breaking layout */
+}
+
+.suggestion-title {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.87);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-year {
+  font-size: 0.78rem;
+  color: #999;
+}
+
+@media (max-width: 480px) {
+  .search-wrapper {
+    margin-bottom: 1rem;
+  }
+}
+
 /* ONLY override on mobile phones */
 @media (max-width: 480px) {
   .movies-grid {
