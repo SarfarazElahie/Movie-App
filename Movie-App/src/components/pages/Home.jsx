@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react'
 import MovieCard from '../MovieCard'
+import GenreBar from '../GenreBar';
 import "../../css/Home.css";
-import { getPopularMovies, searchMovies } from '../../services/api';
+import { getPopularMovies, searchMovies , getByGenre } from '../../services/api';
 import { useLocation, useNavigationType } from 'react-router-dom';
 const Home = () => {
 
@@ -12,6 +13,9 @@ const Home = () => {
 
     const [suggestions, setSuggestions] = useState([]);      // ADD
     const [showSuggestions, setShowSuggestions] = useState(false); // ADD
+
+    const [activeGenre, setActiveGenre]         = useState({ id: null, label: "All" });
+
 
     const debounceRef        = useRef(null);   // ADD — holds the debounce timer
     const searchContainerRef = useRef(null);   // ADD — ref for outside click detection
@@ -24,10 +28,12 @@ const Home = () => {
         if (navigationType === 'POP') {
             const savedQuery   = sessionStorage.getItem('homeSearchQuery') || '';
             const savedMovies  = sessionStorage.getItem('homeSearchMovies');
+            const savedGenre  = sessionStorage.getItem('homeActiveGenre');
 
             if (savedMovies) {
                 setSearchQuerry(savedQuery);
                 setMovies(JSON.parse(savedMovies));
+                if (savedGenre) setActiveGenre(JSON.parse(savedGenre))
                 setLoading(false);
                 return; 
             }
@@ -47,17 +53,24 @@ const Home = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    // ─── Helper: save everything to sessionStorage ──────────────────
+    const saveSession = (query, movies, genre) => {
+        sessionStorage.setItem('homeSearchQuery',  query);
+        sessionStorage.setItem('homeSearchMovies', JSON.stringify(movies));
+        sessionStorage.setItem('homeActiveGenre',  JSON.stringify(genre));
+    };
+
      const loadPopularMovies = async () => {
+        const allGenre = { id: null, label: "All" };
         setSearchQuerry("");
         setLoading(true);
         setSuggestions([]);
         setShowSuggestions(false);
-        try {
+         try {
             const popularMovies = await getPopularMovies();
             setMovies(popularMovies);
             setError(null);
-            sessionStorage.setItem('homeSearchQuery',  '');
-            sessionStorage.setItem('homeSearchMovies', JSON.stringify(popularMovies));
+            saveSession('', popularMovies, allGenre);
         } catch (err) {
             setError("Failed to load movies...");
         } finally {
@@ -73,32 +86,51 @@ const Home = () => {
     //     {id : 4 , title : "Avengers Doomsday", release_date : "2026-12-18", rating : "⭐⭐⭐"}
     // ]
 
+     // ─── Genre pill clicked ─────────────────────────────────────────
+    const handleGenreClick = async (genre) => {
+        setActiveGenre(genre);
+        setSearchQuerry("");        // clear search when genre changes
+        setSuggestions([]);
+        setShowSuggestions(false);
+        setLoading(true);
+        setError(null);
+        try {
+            const results = genre.id === null
+                ? await getPopularMovies()
+                : await getByGenre(genre.id);
+            setMovies(results);
+            saveSession('', results, genre);
+        } catch (err) {
+            setError("Failed to load movies...");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
     const handleSearch = async(e)=>{
         e.preventDefault();
         setShowSuggestions(false); 
         setSuggestions([]);
 
         if(!searchQuerry.trim()){
+            handleGenreClick(activeGenre);
             await loadPopularMovies();
             return;
         }
 
             if(loading) return
             setLoading(true)
-                try{
-                    const searchResults = await searchMovies(searchQuerry);
-                    setMovies(searchResults);
-                    setError(null);
-                    sessionStorage.setItem('homeSearchQuery',  searchQuerry); 
-                    sessionStorage.setItem('homeSearchMovies', JSON.stringify(searchResults));
-                }
-                catch(err){
-                    console.error(err);
-                    setError("Failed to load movies...");
-                }
-                finally{
-                     setLoading(false);
-                };  
+                try {
+            const results = await searchMovies(searchQuerry);
+            setMovies(results);
+            setError(null);
+            saveSession(searchQuerry, results, activeGenre);
+        } catch (err) {
+            setError("Failed to load movies...");
+        } finally {
+            setLoading(false);
+        }
     };
 
 
@@ -106,15 +138,11 @@ const Home = () => {
         const value = e.target.value;
         setSearchQuerry(value);
 
-        if(value.trim() === ""){
+        if (value.trim() === "") {
             clearTimeout(debounceRef.current);
             setSuggestions([]);
             setShowSuggestions(false);
-            setLoading(true);
-            getPopularMovies()
-            .then(popularMovies => setMovies(popularMovies))
-            .catch(()=> setError("Failed to load movies.."))
-            .finally(()=> setLoading(false));
+            handleGenreClick(activeGenre); // restore genre view on clear
             return;
         }
         
@@ -122,7 +150,7 @@ const Home = () => {
         debounceRef.current = setTimeout(async () => {
             try {
                 const results = await searchMovies(value);
-                setSuggestions(results.slice(0, 10)); // show top 6
+                setSuggestions(results.slice(0, 10)); // show top 10
                 setShowSuggestions(true);
             } catch {
                 setSuggestions([]);
@@ -140,13 +168,19 @@ const Home = () => {
             const results = await searchMovies(movie.title);
             setMovies(results);
             setError(null);
-            sessionStorage.setItem('homeSearchQuery',  movie.title);
-            sessionStorage.setItem('homeSearchMovies', JSON.stringify(results));
+            saveSession(movie.title, results, activeGenre);(results);
         } catch {
             setError("Failed to load movies...");
         } finally {
             setLoading(false);
         }
+    };
+
+     // ─── Dynamic heading ────────────────────────────────────────────
+    const getSectionHeading = () => {
+        if (searchQuerry.trim()) return `Results for "${searchQuerry}"`;
+        if (activeGenre.id)     return `${activeGenre.label} Movies`;
+        return "Popular Movies";
     };
 
   return (
@@ -198,6 +232,12 @@ const Home = () => {
                         </ul>
                     )}
                 </div>
+
+            {/* Genre bar */}
+            <GenreBar activeGenreId={activeGenre.id} onGenreClick={handleGenreClick} />
+
+            {/* Dynamic section heading */}
+            <h2 className="section-heading">{getSectionHeading()}</h2>
 
             {error && <div className='error'>{error}</div>}
             {loading ? (<div className='loading'>Loading....</div>) :
