@@ -207,6 +207,34 @@
   grid-column: 1 / -1;   /* spans full grid width */
 }
 
+/* ─── Suggestion meta row ────────────────────────────────────────── */
+
+.suggestion-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.78rem;
+  color: #999;
+}
+
+.suggestion-type {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.suggestion-type.movie {
+  background-color: #1a3a5c;
+  color: #7eb8f7;
+}
+
+.suggestion-type.tv {
+  background-color: #1a4a2a;
+  color: #7ef7a0;
+}
+
 /* ─── Mobile ─────────────────────────────────────────────────────── */
 
 @media (max-width: 480px) {

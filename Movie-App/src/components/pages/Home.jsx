@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import MovieCard from '../MovieCard'
 import GenreBar from '../GenreBar';
 import "../../css/Home.css";
-import { getPopularMovies, searchMovies , getByGenre } from '../../services/api';
+import { getPopularMovies, getPopularSeries , getByGenre, searchAll } from '../../services/api';
 import { useLocation, useNavigationType } from 'react-router-dom';
 const Home = () => {
 
@@ -67,11 +67,11 @@ const Home = () => {
         setSuggestions([]);
         setShowSuggestions(false);
          try {
-            const popularMovies = await getPopularMovies();
-            setMovies(popularMovies);
+            const results = await getPopularMovies();
+            setMovies(results);
             setError(null);
-            saveSession('', popularMovies, allGenre);
-        } catch (err) {
+            saveSession('', results, allGenre);
+        } catch {
             setError("Failed to load movies...");
         } finally {
             setLoading(false);
@@ -94,20 +94,22 @@ const Home = () => {
         setShowSuggestions(false);
         setLoading(true);
         setError(null);
-        try {
-            const results = genre.id === null
-                ? await getPopularMovies()
-                : await getByGenre(genre.id);
+         try {
+            let results;
+            if      (genre.id === null)     results = await getPopularMovies();
+            else if (genre.id === "series") results = await getPopularSeries(); // ← Series branch
+            else                            results = await getByGenre(genre.id);
+
             setMovies(results);
             saveSession('', results, genre);
-        } catch (err) {
-            setError("Failed to load movies...");
+        } catch {
+            setError("Failed to load content...");
         } finally {
             setLoading(false);
         }
     };
 
-
+ // ─── Search submit — searches movies + series ───────────────────
     const handleSearch = async(e)=>{
         e.preventDefault();
         setShowSuggestions(false); 
@@ -115,14 +117,13 @@ const Home = () => {
 
         if(!searchQuerry.trim()){
             handleGenreClick(activeGenre);
-            await loadPopularMovies();
             return;
         }
 
             if(loading) return
             setLoading(true)
-                try {
-            const results = await searchMovies(searchQuerry);
+            try {
+            const results = await searchAll(searchQuerry);
             setMovies(results);
             setError(null);
             saveSession(searchQuerry, results, activeGenre);
@@ -133,7 +134,7 @@ const Home = () => {
         }
     };
 
-
+// ─── Typing — debounced suggestions (movies + series) ──────────
     const handleInputChange = (e)=>{
         const value = e.target.value;
         setSearchQuerry(value);
@@ -149,7 +150,7 @@ const Home = () => {
         clearTimeout(debounceRef.current);
         debounceRef.current = setTimeout(async () => {
             try {
-                const results = await searchMovies(value);
+                const results = await searchAll(value);
                 setSuggestions(results.slice(0, 10)); // show top 10
                 setShowSuggestions(true);
             } catch {
@@ -158,17 +159,18 @@ const Home = () => {
         }, 350);
     }
 
-    const handleSuggestionClick = async (movie) => {
-        setSearchQuerry(movie.title);
+    // ─── Suggestion clicked ─────────────────────────────────────────
+    const handleSuggestionClick = async (item) => {
+        setSearchQuerry(item.title);
         setShowSuggestions(false);
         setSuggestions([]);
 
         setLoading(true);
         try {
-            const results = await searchMovies(movie.title);
+            const results = await searchMovies(item.title);
             setMovies(results);
             setError(null);
-            saveSession(movie.title, results, activeGenre);(results);
+            saveSession(item.title, results, activeGenre);
         } catch {
             setError("Failed to load movies...");
         } finally {
@@ -178,8 +180,9 @@ const Home = () => {
 
      // ─── Dynamic heading ────────────────────────────────────────────
     const getSectionHeading = () => {
-        if (searchQuerry.trim()) return `Results for "${searchQuerry}"`;
-        if (activeGenre.id)     return `${activeGenre.label} Movies`;
+        if (searchQuerry.trim())  return `Results for "${searchQuerry}"`;
+        if (activeGenre.id === "series") return "Popular Series";
+        if (activeGenre.id)       return `${activeGenre.label} Movies`;
         return "Popular Movies";
     };
 

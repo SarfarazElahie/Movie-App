@@ -216,6 +216,29 @@
   font-size: 1.1rem;
 }
 
+/* ─── Details type badge ─────────────────────────────────────────── */
+
+.details-type-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.details-type-badge.movie {
+  background-color: #1a3a5c;
+  color: #7eb8f7;
+}
+
+.details-type-badge.tv {
+  background-color: #1a4a2a;
+  color: #7ef7a0;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 768px) {
   .details-poster {

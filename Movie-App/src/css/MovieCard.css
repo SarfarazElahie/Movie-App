@@ -154,6 +154,28 @@ overflow: hidden;
   color: #ffd700;
 }
 
+/* ─── Card type badge (Movie / Series) ──────────────────────────── */
+
+.card-type-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 3px;
+  font-weight: 600;
+  align-self: flex-start;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.card-type-badge.movie {
+  background-color: #1a3a5c;
+  color: #7eb8f7;
+}
+
+.card-type-badge.tv {
+  background-color: #1a4a2a;
+  color: #7ef7a0;
+}
+
 @media (max-width: 480px){
   .movie-card{
     width: 480;

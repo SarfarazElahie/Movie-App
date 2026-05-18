@@ -8,7 +8,11 @@ const MovieCard = ({movie}) => {
     const {isFavorite, addTofavorites, removeTofavorites} = useMovieContext();
     const favorite = isFavorite(movie.id);
 
-    const isFav = isFavorite(movie.id)
+    // ─── TV shows use .name and .first_air_date — normalize here ───
+    const title   = movie.title        || movie.name;
+    const date    = movie.release_date || movie.first_air_date;
+    const type    = movie.media_type   || 'movie';          // 'movie' or 'tv'
+    const detailPath = `/${type}/${movie.id}`;              // /movie/123 or /tv/456
 
     function onFavoriteClick(e) {
         e.preventDefault();
@@ -17,10 +21,9 @@ const MovieCard = ({movie}) => {
         else addTofavorites(movie);
     }
     
-
   return (
     <>
-    <Link to={`/movie/${movie.id}`} className="movie-card-link">
+    <Link to={detailPath} className="movie-card-link">
         <div className="movie-card">
             <div className="movie-poster">
                 <img src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`} alt={movie.title} />
@@ -40,9 +43,12 @@ const MovieCard = ({movie}) => {
                 </div>
             </div>
             <div className="movie-info">
-                <h3>{movie.title}</h3>
-                <p>{movie.release_date}</p>
-                <h3>{movie.rating}</h3>
+                 {/* ← type badge: Movie or Series */}
+                    <span className={`card-type-badge ${type}`}>
+                        {type === 'tv' ? 'Series' : 'Movie'}
+                    </span>
+                    <h3>{title}</h3>
+                    <p>{date}</p>
             </div>
         </div>
     </Link>

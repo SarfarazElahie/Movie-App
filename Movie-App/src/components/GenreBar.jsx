@@ -2,6 +2,7 @@ import React from 'react';
 
 export const GENRES = [
     { id: null,  label: "All"         },
+    { id: "series",  label: "Series"  },
     { id: 28,    label: "Action"      },
     { id: 35,    label: "Comedy"      },
     { id: 27,    label: "Horror"      },
