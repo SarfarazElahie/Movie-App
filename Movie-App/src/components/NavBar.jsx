@@ -7,7 +7,7 @@ const NavBar = () => {
     <>
     <div className='navbar'>
        <div className="navbar-brand">
-            <Link to= "/">Movie App</Link>
+            <Link to= "/">FlickFind</Link>
         </div>
         <div className="navbar-links">
              <Link className="nav-link" to= "/">Home</Link>
