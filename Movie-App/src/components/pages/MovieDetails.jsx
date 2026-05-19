@@ -1,7 +1,8 @@
 import React , { useEffect, useState } from 'react'
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getDetails, getCredits, getVideos } from '../../services/api';
+import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
+import { getDetails, getCredits, getVideos, getRecommendations  } from '../../services/api';
 import { useMovieContext } from '../../contexts/MovieContext';
+import MovieCard from '../MovieCard';
 import "../../css/MovieDetails.css";
 
 const MovieDetails = () => {
@@ -16,6 +17,7 @@ const MovieDetails = () => {
     const [movie, setMovie]   = useState(null);
     const [cast, setCast]     = useState([]);
     const [trailer, setTrailer] = useState(null);
+    const [recommendations, setRecommendations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError]   = useState(null);
 
@@ -24,15 +26,18 @@ const MovieDetails = () => {
     useEffect(()=>{
         const fetchAll = async () => {
             setLoading(true);
+            window.scrollTo(0, 0); // scroll to top on navigation
             try {
-                const [details, credits, video] = await Promise.all([
+                const [details, credits, video, recs] = await Promise.all([
                     getDetails(mediaType, id),
                     getCredits(mediaType, id),
                     getVideos(mediaType, id),
+                    getRecommendations(mediaType, id),
                 ]);
                 setMovie(details);
                 setCast(credits.slice(0, 10)); 
                 setTrailer(video);
+                setRecommendations(recs);
             } catch (err) {
                 setError("Failed to load movie details.");
             } finally {
@@ -135,18 +140,38 @@ const MovieDetails = () => {
                     <h3>Cast</h3>
                     <div className="cast-grid">
                         {cast.map(member => (
-                            <div key={member.id} className="cast-card">
-                                <img
-                                    src={
-                                        member.profile_path
+                             <Link
+                                to={`/person/${member.id}`}
+                                key={member.id}
+                                className="cast-card-link"   // ADD link wrapper
+                            >
+                                <div className="cast-card">
+                                    <img
+                                        src={member.profile_path
                                             ? `https://image.tmdb.org/t/p/w185/${member.profile_path}`
                                             : "https://via.placeholder.com/185x278?text=No+Image"
-                                    }
-                                    alt={member.name}
-                                />
-                                <p className="cast-name">{member.name}</p>
-                                <p className="cast-character">{member.character}</p>
-                            </div>
+                                        }
+                                        alt={member.name}
+                                    />
+                                    <p className="cast-name">{member.name}</p>
+                                    <p className="cast-character">{member.character}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+             {/* Recommendations — reuses MovieCard so chain navigation works */}
+            {recommendations.length > 0 && (
+                <div className="details-section">
+                    <h3>More Like This</h3>
+                    <div className="recommendations-grid">
+                        {recommendations.map(item => (
+                            <MovieCard
+                                key={`${item.media_type}-${item.id}`}
+                                movie={item}
+                            />
                         ))}
                     </div>
                 </div>

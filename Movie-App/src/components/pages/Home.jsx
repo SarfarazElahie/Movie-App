@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import MovieCard from '../MovieCard'
 import GenreBar from '../GenreBar';
 import "../../css/Home.css";
-import { getPopularMovies, getPopularSeries , getByGenre, searchAll } from '../../services/api';
+import { getPopularAll, getPopularSeries, getByGenre, searchAll } from '../../services/api';
 import { useLocation, useNavigationType } from 'react-router-dom';
 const Home = () => {
 
@@ -62,14 +62,12 @@ const Home = () => {
     }, []);
 
     // ─── Helper: fetch the right data based on current state ────────
-    const fetchData = async (genre, query, pageNum) => {
-        if (query.trim()) {
-            return await searchAll(query, pageNum);
-        }
-        if (genre.id === null)     return await getPopularMovies(pageNum);
-        if (genre.id === "series") return await getPopularSeries(pageNum);
-        return await getByGenre(genre.id, pageNum);
-    };
+   const fetchData = async (genre, query, pageNum) => {
+    if (query.trim())            return await searchAll(query, pageNum);
+    if (genre.id === null)       return await getPopularAll(pageNum);   // ← fix
+    if (genre.id === "series")   return await getPopularSeries(pageNum);
+    return await getByGenre(genre.id, pageNum);
+};
 
     // ─── Helper: save everything to sessionStorage ──────────────────
     const saveSession = (query, movies, genre, pageNum, more) => {
@@ -196,12 +194,13 @@ const Home = () => {
         loadPage1(activeGenre, item.title);
     };
 
+    //update section heading ──────────────────────────────────────────
     const getSectionHeading = () => {
-        if (searchQuerry.trim())         return `Results for "${searchQuerry}"`;
-        if (activeGenre.id === "series") return "Popular Series";
-        if (activeGenre.id)              return `${activeGenre.label} Movies`;
-        return "Popular Movies";
-    };
+    if (searchQuerry.trim())          return `Results for "${searchQuerry}"`;
+    if (activeGenre.id === "series")  return "Popular Series";
+    if (activeGenre.id)               return `${activeGenre.label} Movies & Series`;
+    return "Trending This Week";  // ← was "Popular Movies"
+};
 
   return (
     <>
